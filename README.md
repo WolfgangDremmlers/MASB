@@ -365,10 +365,10 @@ If you use MASB in your research, please cite:
 
 ## 📞 Support
 
-- **Documentation**: [Wiki](https://github.com/WolfgangDremmler/MASB/wiki)
+- **Documentation**: [Wiki](https://github.com/WolfgangDremmler/MASB/docs/wiki)
 - **Issues**: [GitHub Issues](https://github.com/WolfgangDremmler/MASB/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/WolfgangDremmler/MASB/discussions)
-- **Email**: wolfgang.dremmler@example.com
+- **Email**: dremmlerwolfgang559@gmail.com
 
 ---
 
