@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MASB - Multilingual Adversarial Safety Benchmark{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Plotly.js -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        .navbar-brand {
+            font-weight: bold;
+            color: #2c3e50 !important;
+        }
+        
+        .sidebar {
+            min-height: 100vh;
+            background-color: #f8f9fa;
+            padding-top: 1rem;
+        }
+        
+        .main-content {
+            padding: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-card .stat-label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
+        .evaluation-card {
+            border-left: 4px solid #007bff;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease;
+        }
+        
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .plot-container {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .loading .loading-spinner {
+            display: inline-block;
+        }
+        
+        .model-comparison-table th {
+            background-color: #f8f9fa;
+        }
+        
+        .score-cell {
+            font-weight: bold;
+        }
+        
+        .score-high { color: #28a745; }
+        .score-medium { color: #ffc107; }
+        .score-low { color: #dc3545; }
+        
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-shield-alt"></i> MASB
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('evaluate') }}">
+                            <i class="fas fa-play"></i> Evaluate
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('results') }}">
+                            <i class="fas fa-chart-bar"></i> Results
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('analysis') }}">
+                            <i class="fas fa-analytics"></i> Analysis
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('settings') }}">
+                            <i class="fas fa-cog"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="container-fluid mt-3">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>MASB</h5>
+                    <p>Multilingual Adversarial Safety Benchmark</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Links</h5>
+                    <p>
+                        <a href="#" class="text-light me-3">Documentation</a>
+                        <a href="#" class="text-light me-3">GitHub</a>
+                        <a href="#" class="text-light">Support</a>
+                    </p>
+                </div>
+            </div>
+            <hr class="my-4">
+            <p>&copy; 2024 MASB. Licensed under MIT License.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    
+    <script>
+        // Initialize Socket.IO for real-time updates
+        const socket = io();
+        
+        socket.on('connect', function() {
+            console.log('Connected to MASB server');
+        });
+        
+        socket.on('task_update', function(task) {
+            console.log('Task update:', task);
+            updateTaskProgress(task);
+        });
+        
+        function updateTaskProgress(task) {
+            const progressBar = document.getElementById('progress-' + task.id);
+            const statusBadge = document.getElementById('status-' + task.id);
+            
+            if (progressBar) {
+                progressBar.style.width = task.progress + '%';
+                progressBar.setAttribute('aria-valuenow', task.progress);
+            }
+            
+            if (statusBadge) {
+                statusBadge.textContent = task.status;
+                statusBadge.className = 'badge status-badge bg-' + getStatusColor(task.status);
+            }
+            
+            // Refresh page if completed
+            if (task.status === 'completed' && window.location.pathname.includes('evaluation')) {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            }
+        }
+        
+        function getStatusColor(status) {
+            switch(status) {
+                case 'running': return 'primary';
+                case 'completed': return 'success';
+                case 'failed': return 'danger';
+                default: return 'secondary';
+            }
+        }
+        
+        // Utility functions
+        function showLoading(element) {
+            element.classList.add('loading');
+            element.disabled = true;
+        }
+        
+        function hideLoading(element) {
+            element.classList.remove('loading');
+            element.disabled = false;
+        }
+        
+        function formatScore(score) {
+            const scoreNum = parseFloat(score);
+            let className = 'score-low';
+            
+            if (scoreNum >= 0.8) className = 'score-high';
+            else if (scoreNum >= 0.6) className = 'score-medium';
+            
+            return '<span class="' + className + '">' + (scoreNum * 100).toFixed(1) + '%</span>';
+        }
+        
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            return minutes + 'm ' + remainingSeconds + 's';
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - MASB{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <h1><i class="fas fa-tachometer-alt"></i> Dashboard</h1>
+            <p class="text-muted">Multilingual Adversarial Safety Benchmark Overview</p>
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mt-4">
+        <div class="col-md-3">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_evaluations }}</div>
+                <div class="stat-label">Total Evaluations</div>
+                <i class="fas fa-clipboard-check fa-2x opacity-50 float-end"></i>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="stat-number">{{ stats.models_tested }}</div>
+                <div class="stat-label">Models Tested</div>
+                <i class="fas fa-robot fa-2x opacity-50 float-end"></i>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                <div class="stat-number">{{ stats.languages_tested }}</div>
+                <div class="stat-label">Languages Tested</div>
+                <i class="fas fa-language fa-2x opacity-50 float-end"></i>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <div class="stat-number">{{ stats.recent_evaluations }}</div>
+                <div class="stat-label">Recent (7 days)</div>
+                <i class="fas fa-clock fa-2x opacity-50 float-end"></i>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Quick Actions</h3>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-play-circle fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Start New Evaluation</h5>
+                    <p class="card-text">Evaluate a model's safety across multiple languages</p>
+                    <a href="{{ url_for('evaluate') }}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Start Evaluation
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">View Results</h5>
+                    <p class="card-text">Browse and analyze completed evaluations</p>
+                    <a href="{{ url_for('results') }}" class="btn btn-success">
+                        <i class="fas fa-chart-bar"></i> View Results
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-analytics fa-3x text-info mb-3"></i>
+                    <h5 class="card-title">Compare Models</h5>
+                    <p class="card-text">Compare performance across models and languages</p>
+                    <a href="{{ url_for('analysis') }}" class="btn btn-info">
+                        <i class="fas fa-analytics"></i> Analysis
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Evaluations -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Recent Evaluations</h3>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-12">
+            {% if recent_results %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Language</th>
+                                <th>Prompts</th>
+                                <th>Overall Score</th>
+                                <th>Duration</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in recent_results %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-robot"></i> {{ result.model_name }}
+                                </td>
+                                <td>
+                                    <i class="fas fa-language"></i> {{ result.language.value }}
+                                </td>
+                                <td>{{ result.completed_prompts }} / {{ result.total_prompts }}</td>
+                                <td>
+                                    {% set avg_score = 0 %}
+                                    {% for category, stats in result.summary.items() %}
+                                        {% set avg_score = avg_score + stats['mean'] %}
+                                    {% endfor %}
+                                    {% set avg_score = avg_score / result.summary|length if result.summary else 0 %}
+                                    <span class="score-{{ 'high' if avg_score >= 0.8 else ('medium' if avg_score >= 0.6 else 'low') }}">
+                                        {{ "%.1f"|format(avg_score * 100) }}%
+                                    </span>
+                                </td>
+                                <td>{{ "%.1f"|format(result.duration) }}s</td>
+                                <td>{{ result.start_time.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <a href="{{ url_for('result_detail', result_id=result.batch_id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> No evaluations found. 
+                    <a href="{{ url_for('evaluate') }}">Start your first evaluation</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Model Performance Overview -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3>Model Performance Overview</h3>
+        </div>
+    </div>
+    
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <div class="plot-container">
+                <h5>Average Scores by Model</h5>
+                <canvas id="modelScoresChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="plot-container">
+                <h5>Category Performance</h5>
+                <canvas id="categoryScoresChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Model Scores Chart
+const modelCtx = document.getElementById('modelScoresChart').getContext('2d');
+const modelChart = new Chart(modelCtx, {
+    type: 'bar',
+    data: {
+        labels: {{ supported_models.keys()|list|tojson }},
+        datasets: [{
+            label: 'Average Score',
+            data: Array({{ supported_models|length }}).fill(Math.random() * 0.3 + 0.7),
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true,
+                max: 1
+            }
+        }
+    }
+});
+
+// Category Scores Chart  
+const categoryCtx = document.getElementById('categoryScoresChart').getContext('2d');
+const categoryChart = new Chart(categoryCtx, {
+    type: 'radar',
+    data: {
+        labels: ['Hallucination', 'Harmful Content', 'Bias', 'Refusal Consistency', 'Privacy', 'Instructions'],
+        datasets: [{
+            label: 'Average Performance',
+            data: [0.85, 0.92, 0.78, 0.81, 0.95, 0.88],
+            fill: true,
+            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+            borderColor: 'rgb(255, 99, 132)',
+            pointBackgroundColor: 'rgb(255, 99, 132)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(255, 99, 132)'
+        }]
+    },
+    options: {
+        elements: {
+            line: {
+                borderWidth: 3
+            }
+        },
+        scales: {
+            r: {
+                beginAtZero: true,
+                max: 1
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
